@@ -61,6 +61,14 @@ public class ShadowSettings
         public CascadeBlendMode cascadeBlend;
 
     }
+    
+    //其他类型光的阴影图集设置
+    [System.Serializable]
+    public struct Other
+    {
+        public TextureSize atlasSize;
+        public FilterMode filter;
+    }
 
     //默认阴影贴图尺寸为1024*1024
     public Directional directional = new Directional
@@ -73,5 +81,12 @@ public class ShadowSettings
         cascadeRatio3 = 0.5f,
         cascadeFade = 0.1f,
         cascadeBlend = CascadeBlendMode.Hard,
+    };
+
+    //默认阴影贴图尺寸为1024*1024
+    public Other other = new Other
+    {
+        atlasSize = TextureSize._1024,
+        filter = FilterMode.PCF2x2,
     };
 }
