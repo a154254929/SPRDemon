@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useDynamicBatching: 1
   useGPUInstancing: 1
-  useSRPBatching: 0
+  useSRPBatching: 1
+  useLightsPerObject: 1
   shadowSettings:
     maxDistance: 19.37
     distanceFade: 0.1

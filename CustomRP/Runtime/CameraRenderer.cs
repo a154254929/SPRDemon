@@ -27,6 +27,7 @@ public partial class CameraRenderer
         Camera camera,
         bool useDynamicBatching,
         bool useGPUInstancing,
+        bool useLightsPerObject,
         ShadowSettings shadowSettings
     )
     {
@@ -46,13 +47,13 @@ public partial class CameraRenderer
         buffer.BeginSample(SampleName);
         ExcuteBuffer();
         //设置光照参数
-        lighting.SetUp(context, cullResults, shadowSettings);
+        lighting.SetUp(context, cullResults, shadowSettings, useLightsPerObject);
         buffer.EndSample(SampleName);
         Setup();
         //绘制SRP不支持的着色器类型
         DrawUnsupportedShader();
         //绘制可见集合体
-        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing, useLightsPerObject);
         //绘制Fizmos
         DrawFizmos();
         lighting.Cleanup();
@@ -84,8 +85,9 @@ public partial class CameraRenderer
         buffer.Clear();
     }
 
-    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject)
     {
+        PerObjectData lightPerObjectFlags = useLightsPerObject ? PerObjectData.LightData | PerObjectData.LightIndices : PerObjectData.None;
         SortingSettings sortingSettings = new SortingSettings(camera)
         {
             criteria = SortingCriteria.CommonOpaque
@@ -101,6 +103,9 @@ public partial class CameraRenderer
                 | PerObjectData.LightProbe
                 | PerObjectData.LightProbeProxyVolume
                 | PerObjectData.OcclusionProbe
+                | PerObjectData.OcclusionProbeProxyVolume
+                | PerObjectData.ReflectionProbes
+                | lightPerObjectFlags
         };
         drawingSettings.SetShaderPassName(1, litShaderTagId);
 

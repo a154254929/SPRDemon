@@ -63,6 +63,11 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
 
+	//#ifdef LOD_FADE_CROSSFADE
+	//	return unity_LODFade.x;
+	//#endif
+    ClipLOD(input.positionCS.xy, unity_LODFade.x);
+	
 	//float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	//baseColor *= SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.baseUV);
     float4 base = GetBase(input.baseUV);
@@ -84,13 +89,14 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.depth = -TransformWorldToView(input.positionWS).z;
     surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+    surface.fresnelStrength = GetFresnel();
 #ifdef _PREMULTIPLY_ALPHA
 	BRDF brdf = GetBRDF(surface, true);
 #else
 	BRDF brdf = GetBRDF(surface);
 #endif
 	//获取全局照明数据
-    GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
+    GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 finalColor = GetLighting(surface, brdf, gi);
     finalColor += GetEmission(input.baseUV);
 

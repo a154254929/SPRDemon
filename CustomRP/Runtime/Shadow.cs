@@ -44,7 +44,8 @@ public class Shadow
 
     static string[] shadowNaskKeywords =
     {
-        "_SHADOW_MASK_DISTANCE"
+        "_SHADOW_MASK_ALWAYS",
+        "_SHADOW_MASK_DISTANCE",
     };
 
     CommandBuffer buffer = new CommandBuffer
@@ -92,8 +93,8 @@ public class Shadow
         buffer.Clear();
     }
 
-    //储存可见光的阴影数据
-    public Vector3 ReserveDirectionalLightShadows(Light light, int visibleLightIndex)
+    //储存平行光的阴影数据
+    public Vector4 ReserveDirectionalLightShadows(Light light, int visibleLightIndex)
     {
         if(
             ShadowDirectionalLightCount < maxShadowDirectionalLightCount &&
@@ -102,15 +103,17 @@ public class Shadow
             cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds bounds)
         )
         {
+            float maskChannel = -1;
             //如果使用了ShadowMask
             LightBakingOutput lightBaking = light.bakingOutput;
             if(lightBaking.lightmapBakeType == LightmapBakeType.Mixed && lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
             {
                 useShadowMask = true;
+                maskChannel = lightBaking.occlusionMaskChannel;
             }
             if(!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
             {
-                return new Vector3(-light.shadowStrength, 0.0f, 0.0f);
+                return new Vector4(-light.shadowStrength, 0.0f, 0.0f, maskChannel);
             }
             shadowDirectionalLights[ShadowDirectionalLightCount] = new ShadowDirectionalLight
             {
@@ -118,13 +121,29 @@ public class Shadow
                 slopeScaleBias = light.shadowBias,
                 nearPlaneOffset = light.shadowNearPlane
             };
-            return new Vector3(
+            return new Vector4(
                 light.shadowStrength,
                 shadowSettings.directional.cascadeCount * ShadowDirectionalLightCount++,
-                light.shadowBias
+                light.shadowBias,
+                maskChannel
             );
         }
-        return Vector3.zero;
+        return new Vector4(0.0f, 0.0f, 0.0f, -1f);
+    }
+
+    //储存其他类型光的阴影数据
+    public Vector4 ReserveOtherLightShadows(Light light, int visibleLightIndex)
+    {
+        if(light.shadows != LightShadows.None && light.shadowStrength > 0.0f)
+        {
+            LightBakingOutput lightBaking = light.bakingOutput;
+            if(lightBaking.lightmapBakeType == LightmapBakeType.Mixed && lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
+            {
+                useShadowMask = true;
+                return new Vector4(light.shadowStrength, 0.0f, 0.0f, lightBaking.occlusionMaskChannel);
+            }
+        }
+        return new Vector4(0.0f, 0.0f, 0.0f, -1f);
     }
 
     //阴影渲染
@@ -136,7 +155,7 @@ public class Shadow
         }
         //是否使用阴影蒙版
         buffer.BeginSample(bufferName);
-        SetKeyword(shadowNaskKeywords, useShadowMask ? 0 : -1);
+        SetKeyword(shadowNaskKeywords, useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         buffer.EndSample(bufferName);
         ExcuteBuffer();
     }

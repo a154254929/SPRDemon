@@ -11,6 +11,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+	UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -41,6 +42,11 @@ float GetMetallic()
 float GetSmoothness()
 {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+}
+
+float GetFresnel()
+{
+    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Fresnel);
 }
 
 float3 GetEmission(float2 baseUV)

@@ -14,6 +14,7 @@ struct Surface
 	//表面深度
     float depth;
     float dither;
+    float fresnelStrength;
 };
 
 #endif

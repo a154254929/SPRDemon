@@ -6,7 +6,11 @@ using UnityEngine.Rendering;
 public class CustomRenderPipelineAsset : RenderPipelineAsset
 {
     [SerializeField]
-    bool useDynamicBatching = true, useGPUInstancing = true, useSRPBatching = true;
+    bool 
+        useDynamicBatching = true,
+        useGPUInstancing = true,
+        useSRPBatching = true,
+        useLightsPerObject = true;
 
     //“ı”∞…Ë÷√
     [SerializeField]
@@ -14,6 +18,6 @@ public class CustomRenderPipelineAsset : RenderPipelineAsset
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatching, shadowSettings);
+        return new CustomRenderPipeline(useDynamicBatching, useGPUInstancing, useSRPBatching, useLightsPerObject, shadowSettings);
     }
 }
