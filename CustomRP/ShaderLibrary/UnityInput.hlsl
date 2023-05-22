@@ -36,6 +36,8 @@ CBUFFER_START(UnityPerDraw)
 
 	real4 unity_LightData;
 	real4 unity_LightIndices[2];
+
+	float4 _ProjectionParams;
 CBUFFER_END
 
 //œ‡ª˙Œª÷√

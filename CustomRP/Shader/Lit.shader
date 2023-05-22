@@ -63,6 +63,7 @@ Shader "CustomRP/Lit"
             {
                 "LightMode" = "ShadowCaster"
             }
+            Cull Off
             ColorMask 0
 
             HLSLPROGRAM

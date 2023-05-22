@@ -28,3 +28,7 @@ MonoBehaviour:
       cascadeRatio3: 0.5
       cascadeFade: 0.1
       cascadeBlend: 1
+    other:
+      atlasSize: 1024
+      filter: 0
+  postFxSetting: {fileID: 11400000, guid: d181d002a3065b9498d28eab992145e8, type: 2}

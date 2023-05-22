@@ -6,9 +6,17 @@ public partial class CustomRenderPipeline : RenderPipeline
     bool useDynamicBatching, useGPUInstancing, useLightsPerObject;
     CameraRenderer renderer = new CameraRenderer();
     ShadowSettings shadowSettings;
+    PostFXSetting postFXSetting;
 
     //SRP合并测试
-    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSPRBather, bool useLightsPerObject, ShadowSettings shadowSettings)
+    public CustomRenderPipeline(
+        bool useDynamicBatching,
+        bool useGPUInstancing,
+        bool useSPRBather,
+        bool useLightsPerObject,
+        ShadowSettings shadowSettings,
+        PostFXSetting postFXSetting
+    )
     {
         //设置合批启用状态
         this.useDynamicBatching = useDynamicBatching;
@@ -19,6 +27,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         GraphicsSettings.lightsUseLinearIntensity = true;
 
         this.shadowSettings = shadowSettings;
+        this.postFXSetting = postFXSetting;
         InitializeForEditor();
     }
 
@@ -26,7 +35,15 @@ public partial class CustomRenderPipeline : RenderPipeline
     {
         for (int i = 0; i < cameras.Length; ++i)
         {
-            renderer.Render(context, cameras[i], useDynamicBatching, useGPUInstancing, useLightsPerObject, shadowSettings);
+            renderer.Render(
+                context,
+                cameras[i],
+                useDynamicBatching,
+                useGPUInstancing,
+                useLightsPerObject,
+                shadowSettings,
+                postFXSetting
+            );
         }
     }
 }

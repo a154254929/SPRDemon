@@ -26,17 +26,22 @@ struct Varyings
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+bool _ShadowPancaking;
+
 Varyings ShadowCasterPassVertex(Attributes input)
 {
 	Varyings output;
 	UNITY_SETUP_INSTANCE_ID(input);
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
 	output.positionCS = TransformWorldToHClip(TransformObjectToWorld(input.positionOS));
-#if UNITY_REVERSED_Z
-	output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-#else
-    output.positionCS.z = max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-#endif
+	if (_ShadowPancaking)
+	{
+		#if UNITY_REVERSED_Z
+			output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+		#else
+			output.positionCS.z = max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+		#endif
+	}
 	//float4 mainTexST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MainTex_ST);
 	//output.baseUV = input.baseUV * mainTexST.xy + mainTexST.zw;
     output.baseUV = TransformBaseUV(input.baseUV);

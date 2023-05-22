@@ -15,7 +15,11 @@ public partial class CameraRenderer
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
 
+    static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+
     Lighting lighting = new Lighting();
+
+    PostFxStack postFxStack = new PostFxStack();
 
     CommandBuffer buffer = new CommandBuffer
     {
@@ -28,7 +32,8 @@ public partial class CameraRenderer
         bool useDynamicBatching,
         bool useGPUInstancing,
         bool useLightsPerObject,
-        ShadowSettings shadowSettings
+        ShadowSettings shadowSettings,
+        PostFXSetting postFXSettings
     )
     {
         this.context = context;
@@ -48,6 +53,7 @@ public partial class CameraRenderer
         ExcuteBuffer();
         //设置光照参数
         lighting.SetUp(context, cullResults, shadowSettings, useLightsPerObject);
+        postFxStack.Setup(context, camera, postFXSettings);
         buffer.EndSample(SampleName);
         Setup();
         //绘制SRP不支持的着色器类型
@@ -55,8 +61,13 @@ public partial class CameraRenderer
         //绘制可见集合体
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing, useLightsPerObject);
         //绘制Fizmos
-        DrawFizmos();
-        lighting.Cleanup();
+        DrawGizmosBeforeFX();
+        if(postFxStack.IsActive)
+        {
+            postFxStack.Render(frameBufferId);
+        }
+        DrawGizmosAfterFX();
+        Cleanup();
         Submit();
     }
 
@@ -65,11 +76,42 @@ public partial class CameraRenderer
         context.SetupCameraProperties(camera);
         //得到相机的clear flags
         CameraClearFlags falgs = camera.clearFlags;
+
+        if (postFxStack.IsActive)
+        {
+            //if (falgs > CameraClearFlags.Color)
+            //{
+            //    falgs = CameraClearFlags.Color;
+            //}
+            buffer.GetTemporaryRT(
+                frameBufferId,
+                camera.pixelWidth,
+                camera.pixelHeight,
+                32,
+                FilterMode.Bilinear,
+                RenderTextureFormat.Default
+            );
+            //SetRenderTarget调用后会把图像渲染到frameBufferId对应的图像上而不是相机上
+            buffer.SetRenderTarget(
+                frameBufferId,
+                RenderBufferLoadAction.DontCare,
+                RenderBufferStoreAction.Store
+            );
+        }
         //设置相机的清除状态
         buffer.ClearRenderTarget(falgs <= CameraClearFlags.Depth, falgs == CameraClearFlags.Color,
             falgs == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
         buffer.BeginSample(SampleName);
         ExcuteBuffer();
+    }
+
+    void Cleanup()
+    {
+        lighting.Cleanup();
+        if(postFxStack.IsActive)
+        {
+            buffer.ReleaseTemporaryRT(frameBufferId);
+        }
     }
 
     void Submit()
