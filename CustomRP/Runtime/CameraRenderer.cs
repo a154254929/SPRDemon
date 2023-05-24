@@ -12,6 +12,8 @@ public partial class CameraRenderer
 
     const string bufferName = "Render Camera";
 
+    bool useHDR;
+
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
 
@@ -29,11 +31,13 @@ public partial class CameraRenderer
     public void Render(
         ScriptableRenderContext context,
         Camera camera,
+        bool allowHDR,
         bool useDynamicBatching,
         bool useGPUInstancing,
         bool useLightsPerObject,
         ShadowSettings shadowSettings,
-        PostFXSetting postFXSettings
+        PostFXSetting postFXSettings,
+        int colorLUTResolution
     )
     {
         this.context = context;
@@ -49,11 +53,12 @@ public partial class CameraRenderer
         {
             return;
         }
+        useHDR = allowHDR && camera.allowHDR;
         buffer.BeginSample(SampleName);
         ExcuteBuffer();
         //设置光照参数
         lighting.SetUp(context, cullResults, shadowSettings, useLightsPerObject);
-        postFxStack.Setup(context, camera, postFXSettings);
+        postFxStack.Setup(context, camera, postFXSettings, useHDR, colorLUTResolution);
         buffer.EndSample(SampleName);
         Setup();
         //绘制SRP不支持的着色器类型
@@ -89,7 +94,7 @@ public partial class CameraRenderer
                 camera.pixelHeight,
                 32,
                 FilterMode.Bilinear,
-                RenderTextureFormat.Default
+                useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
             );
             //SetRenderTarget调用后会把图像渲染到frameBufferId对应的图像上而不是相机上
             buffer.SetRenderTarget(
