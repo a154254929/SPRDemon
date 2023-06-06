@@ -39,7 +39,8 @@ Varyings UnlitPassVertex(Attributes input)
 float4 UnlitPassFragment(Varyings input) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
-	return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
+	float4 base = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
+	return float4(base.rgb, GetFinalAlpha(base.a));
 }
 
 #endif

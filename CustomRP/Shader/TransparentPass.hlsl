@@ -52,7 +52,7 @@ float4 TransparentPassFragment(Varyings input) : SV_TARGET
 	#ifdef _CLIPPING
 		clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
 	#endif
-	return finalColor;
+	return float4(finalColor.rgb, GetFinalAlpha(finalColor.a));
 }
 
 #endif

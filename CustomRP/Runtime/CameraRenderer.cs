@@ -19,6 +19,8 @@ public partial class CameraRenderer
 
     static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
 
+    static CameraSettings defaultCameraSettings = new CameraSettings();
+
     Lighting lighting = new Lighting();
 
     PostFxStack postFxStack = new PostFxStack();
@@ -42,6 +44,13 @@ public partial class CameraRenderer
     {
         this.context = context;
         this.camera = camera;
+        CustomRenderPipelineCamera crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
+        CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
+        //如果需要覆盖后处理配置,将渲染管线的后处理配置替换成该相机的后处理配置
+        if(cameraSettings.overrideSettings)
+        {
+            postFXSettings = cameraSettings.postFXSetting;
+        }
 
         //设置命令缓冲区的名字
         PrepareBuffer();
@@ -58,7 +67,7 @@ public partial class CameraRenderer
         ExcuteBuffer();
         //设置光照参数
         lighting.SetUp(context, cullResults, shadowSettings, useLightsPerObject);
-        postFxStack.Setup(context, camera, postFXSettings, useHDR, colorLUTResolution);
+        postFxStack.Setup(context, camera, postFXSettings, useHDR, colorLUTResolution, cameraSettings.finalBlendMode);
         buffer.EndSample(SampleName);
         Setup();
         //绘制SRP不支持的着色器类型

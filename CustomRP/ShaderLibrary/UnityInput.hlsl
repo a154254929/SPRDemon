@@ -13,6 +13,7 @@ CBUFFER_START(UnityPerDraw)
 
 	//一些写代码不需要的信息矩阵
 	real4 unity_WorldTransformParams;
+	float4 unity_RenderingLayer;
 
 	float4 unity_ProbesOcclusion;
 	float4 unity_SpecCube0_HDR;
