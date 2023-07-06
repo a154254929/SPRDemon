@@ -52,12 +52,13 @@ Varyings ShadowCasterPassVertex(Attributes input)
 void ShadowCasterPassFragment(Varyings input)// : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    ClipLOD(input.positionCS.xy, unity_LODFade.x);
+    InputConfig inputConfig = GetInputConfig(input.positionCS, input.baseUV);
+    ClipLOD(inputConfig.fragment, unity_LODFade.x);
 
 	//float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	//float4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.baseUV);
 	//float4 finalColor = baseColor * texColor;
-    float4 base = GetBase(input.baseUV);
+    float4 base = GetBase(inputConfig);
 
 #if defined(_SHADOWS_CLIP)
 	//clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));

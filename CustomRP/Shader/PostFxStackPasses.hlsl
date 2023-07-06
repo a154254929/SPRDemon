@@ -10,8 +10,6 @@ struct Varyings
 };
 
 TEXTURE2D(_PostFXSource);
-SAMPLER(sampler_linear_clamp);
-SAMPLER(sampler_point_clamp);
 float4 _PostFXSource_TexelSize;
 TEXTURE2D(_PostFXSource2);
 
@@ -38,6 +36,8 @@ float4 _SMHRange;
 float4 _ColorGradingLUTParameters;
 float _ColorGradingLUTInLohC;
 TEXTURE2D(_ColorGradingLUT);
+
+bool _CopyBicubic;
 
 float Luminance(float3 color, bool useACES)
 {
@@ -404,5 +404,17 @@ float4 FinalPassFragment(Varyings input) : SV_TARGET
 	float4 color = GetSource(input.screenUV);
 	color.rgb = ApplyColorGradingLUT(color.rgb);
 	return color;
+}
+
+float4 FinalPassFragmentRescale(Varyings input) : SV_TARGET
+{
+	if(_CopyBicubic)
+	{
+		return GetSourceBicubic(input.screenUV);
+	}
+	else
+	{
+		return GetSource(input.screenUV);
+	}
 }
 #endif

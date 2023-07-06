@@ -39,6 +39,8 @@ CBUFFER_START(UnityPerDraw)
 	real4 unity_LightIndices[2];
 
 	float4 _ProjectionParams;
+	//正交相机信息
+	float4 unity_OrthoParams;
 CBUFFER_END
 
 //相机位置
@@ -52,5 +54,9 @@ float4x4 unity_MatrixVP;
 
 //透视空间的矩阵
 float4x4 glstate_matrix_projection;
+
+float4 _ScreenParams;
+
+float4 _ZBufferParams;
 
 #endif

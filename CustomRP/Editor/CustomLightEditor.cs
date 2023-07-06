@@ -12,7 +12,8 @@ public class CustomLightEditor : LightEditor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        DrawRenderingLayerMask();
+        //DrawRenderingLayerMask();
+        RenderingLayerMaskDrawer.Draw(settings.renderingLayerMask, renderingLayerMaskLabel);
         if (!settings.lightType.hasMultipleDifferentValues && (LightType)settings.lightType.enumValueIndex == LightType.Spot)
         {
             settings.DrawInnerAndOuterSpotAngle();

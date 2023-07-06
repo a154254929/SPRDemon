@@ -29,16 +29,23 @@ struct Attributes
 	float3 positionOS : POSITION;
 	float2 baseUV : TEXCOORD0;
 	float3 normalOS : NORMAL;
+	float4 tangentOS : TANGENT;
 	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct Varyings
 {
-	float4 positionCS : SV_POSITION;
+	float4 positionCS_SS : SV_POSITION;
 	float3 positionWS : VAR_POSITION;
 	float2 baseUV : VAR_BASE_UV;
+	#ifdef _DETAIL_MAP 
+		float2 detailUV : VAR_DETAIL_UV;
+	#endif
     float3 normalWS : VAR_NORMAL;
+	#ifdef _NORMAL_MAP
+		float4 tangentWS : VAR_TANGENT;
+	#endif
     GI_VARYINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -50,11 +57,17 @@ Varyings LitPassVertex(Attributes input)
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
 	output.positionWS = TransformObjectToWorld(input.positionOS);
-	output.positionCS = TransformWorldToHClip(output.positionWS);
+	output.positionCS_SS = TransformWorldToHClip(output.positionWS);
 	//float4 mainTexST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _MainTex_ST);
 	//output.baseUV = input.baseUV * mainTexST.xy + mainTexST.zw;
     output.baseUV = TransformBaseUV(input.baseUV);
+	#ifdef _DETAIL_MAP 
+		output.detailUV = TransformDetailUV(input.baseUV);
+	#endif
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+	#ifdef _NORMAL_MAP
+		output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
+	#endif
 	return output;
 }
 
@@ -66,11 +79,19 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	//#ifdef LOD_FADE_CROSSFADE
 	//	return unity_LODFade.x;
 	//#endif
-    ClipLOD(input.positionCS.xy, unity_LODFade.x);
+	InputConfig inputconfig = GetInputConfig(input.positionCS_SS, input.baseUV);
+    ClipLOD(inputconfig.fragment, unity_LODFade.x);
+	#ifdef _MASK_MAP 
+		inputconfig.useMask = true;
+	#endif
+	#ifdef _DETAIL_MAP 
+		inputconfig.useDetail = true;
+		inputconfig.detailUV = input.detailUV;
+	#endif
 	
 	//float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	//baseColor *= SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.baseUV);
-    float4 base = GetBase(input.baseUV);
+    float4 base = GetBase(inputconfig);
 
 	#ifdef _CLIPPING
 		//clip(baseColor.alpha - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
@@ -79,18 +100,26 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	
 	Surface surface;
 	surface.position = input.positionWS;
-	surface.normal = normalize(input.normalWS);
+	//surface.normal = normalize(input.normalWS);
+	#ifdef _NORMAL_MAP
+		surface.normal = NormalTangentToWorld(GetNormalTS(inputconfig), input.normalWS, input.tangentWS);
+		surface.interpolateNormal = input.normalWS;
+	#else
+		surface.normal = normalize(input.normalWS);
+		surface.interpolateNormal = surface.normal;
+	#endif
 	//surface.color = baseColor.rgb;
 	//surface.alpha = baseColor.a;
     surface.color = base.rgb;
     surface.alpha = base.a;
-    surface.metallic = GetMetallic();
-    surface.smoothness = GetSmoothness();
+    surface.metallic = GetMetallic(inputconfig);
+    surface.smoothness = GetSmoothness(inputconfig);
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.depth = -TransformWorldToView(input.positionWS).z;
-    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+    surface.dither = InterleavedGradientNoise(input.positionCS_SS.xy, 0);
 	surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
     surface.fresnelStrength = GetFresnel();
+    surface.occlusion = GetOcclusion(inputconfig);
 #ifdef _PREMULTIPLY_ALPHA
 	BRDF brdf = GetBRDF(surface, true);
 #else
@@ -101,6 +130,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
     float3 finalColor = GetLighting(surface, brdf, gi);
     finalColor += GetEmission(input.baseUV);
 
+	//return float4(surface.normal, GetFinalAlpha(surface.alpha));
 	return float4(finalColor, GetFinalAlpha(surface.alpha));
 }
 

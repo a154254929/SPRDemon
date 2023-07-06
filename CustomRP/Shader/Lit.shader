@@ -3,6 +3,9 @@ Shader "CustomRP/Lit"
     Properties
     {
         _MainTex("Main Texture", 2D) = "white" {}
+        [NoScaleOffset]_NormalMap("Normals", 2D) = "bump" {}
+        [Toggle(_NORMAL_MAP)] _NormalMapToggle("Normal Map", float) = 0
+        _NormalScale("Normal Scale", Range(0.0, 1.0)) = 1.0
         [HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
         _BaseColor("Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _Metallic("Matelllic", Range(0.0, 1.0)) = 0
@@ -11,6 +14,17 @@ Shader "CustomRP/Lit"
         _Cutoff("Alpha Cutoff", range(0.0, 1.0)) = 0.5
         [NoScaleOffset]_EmissionMap("Emission", 2D) = "white" {}
         [HDR]_EmissionColor("Emission", Color) = (1.0, 1.0, 1.0, 1.0)
+        [Toggle(_MASK_MAP)] _MaskMapToggle("Mask Map", float) = 0
+        [NoScaleOffset]_MaskMap("Mask(MODS)", 2D) = "white" {}
+        //遮挡强度
+        _Occlusion("Occlusion", Range(0,1)) = 1
+        //细节纹理
+        [Toggle(_DETAIL_MAP)] _DetailMapToggle("Detail Map", float) = 0
+        _DetailMap("Details", 2D) = "linearGray" {}
+        _DetailAlbedo("Detail Albedo", Range(0,1)) = 1
+        _DetailSmoothness("Detail Smoothness", Range(0,1)) = 1
+        [NoScaleOffset]_DetailNormalMap("Detail Normals", 2D) = "bump" {}
+        _DetailNormalScale("Detail Normal Scale", Range(0.0, 1.0)) = 1.0
 
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Src Blend", int) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Dst Blend", int) = 0
@@ -40,6 +54,9 @@ Shader "CustomRP/Lit"
             #pragma target 3.5
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _NORMAL_MAP
+            #pragma shader_feature _MASK_MAP
+            #pragma shader_feature _DETAIL_MAP
             //是否透明通道预乘
             #pragma shader_feature _PREMULTIPLY_ALPHA
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7

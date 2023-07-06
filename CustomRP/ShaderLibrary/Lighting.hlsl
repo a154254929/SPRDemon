@@ -8,7 +8,7 @@ float3 IncomingLighting(Surface surface, Light light)
 }
 
 //检测表面掩码和灯光掩码是否重叠
-bool RenderingLayerOverlap(Surface surface, Light light)
+bool RenderingLayersOverlap(Surface surface, Light light)
 {
     return (surface.renderingLayerMask & light.renderingLayerMask) != 0;
 }
@@ -30,7 +30,7 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi)
     for (int i = 0; i < dirctionalLightCount; ++i)
     {
         Light light = GetDirectionalLight(i, surfaceWS, shadowData);
-        if (RenderingLayerOverlap(surfaceWS, light))
+        if (RenderingLayersOverlap(surfaceWS, light))
         {
             color += GetLighting(surfaceWS, brdf, light);
         }
@@ -40,7 +40,7 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi)
         {
             int lightIndex = unity_LightIndices[(uint)i / 4][(uint)i % 4];
             Light light = GetOtherLight(lightIndex, surfaceWS, shadowData);
-            if (RenderingLayerOverlap(surfaceWS, light))
+            if (RenderingLayersOverlap(surfaceWS, light))
             {
                 color += GetLighting(surfaceWS, brdf, light);
             }
@@ -49,7 +49,7 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi)
         for (int i = 0; i < GetOtherLightCount(); ++i)
         {
             Light light = GetOtherLight(i, surfaceWS, shadowData);
-            if (RenderingLayerOverlap(surfaceWS, light))
+            if (RenderingLayersOverlap(surfaceWS, light))
             {
                 color += GetLighting(surfaceWS, brdf, light);
             }

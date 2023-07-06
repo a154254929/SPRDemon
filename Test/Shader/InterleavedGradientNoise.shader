@@ -20,8 +20,8 @@
         {
             Blend SrcAlpha OneMinusSrcAlpha
             HLSLPROGRAM
-            #pragma vertex Vertex
-            #pragma fragment Fragment
+            #pragma vertex InterleavedGradientNoiseVertex
+            #pragma fragment InterleavedGradientNoiseFragment
 
             #include "../../CustomRP/ShaderLibrary/Common.hlsl"
 
@@ -45,7 +45,7 @@
             half4 _BaseColor;
             float _X, _Y, _Z;
 
-            Varyings Vertex(Attributes input)
+            Varyings InterleavedGradientNoiseVertex(Attributes input)
             {
                 Varyings output;
                 output.positionWS = TransformObjectToWorld(input.positionOS);
@@ -57,7 +57,7 @@
             }
 
 
-            float4 Fragment(Varyings input) : SV_TARGET
+            float4 InterleavedGradientNoiseFragment(Varyings input) : SV_TARGET
             {
                 //return float4(_BaseColor.rgb, InterleavedGradientNoise(input.positionCS.xy, 0));
                 return float4(_BaseColor.rgb, InterleavedGradientNoise(input.positionCS.xy / float2(_X, _Y), _Z));

@@ -71,7 +71,7 @@ Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData)
 	Light light;
 	light.color = _DirectionalLightColors[index].rgb;
 	light.direction = _DirectionalLightDirectionsAndMasks[index].xyz;
-	light.renderingLayerMask = _DirectionalLightDirectionsAndMasks[index].w;
+	light.renderingLayerMask = asuint(_DirectionalLightDirectionsAndMasks[index].w);
 	//得到阴影数据
     DirectionalShadowData dirShadowData = GetDirectionalShadowData(index, shadowData);
 	//得到阴影衰减
@@ -95,7 +95,7 @@ Light GetOtherLight(int index, Surface surfaceWS, ShadowData shadowData)
     //light.attenuation = 1.0 / distanceSqr;
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * _OtherLightPositions[index].w)));
 	float3 spotDirectionWS = _OtherLightDirectionsAndMasks[index].xyz;
-	light.renderingLayerMask = _OtherLightDirectionsAndMasks[index].w;
+	light.renderingLayerMask = asuint(_OtherLightDirectionsAndMasks[index].w);
 	//得到聚光灯衰减
     float4 spotAngles = _OtherLightSpotAngles[index];
     float spotAttenuation = Square(saturate(dot(spotDirectionWS, light.direction) * spotAngles.x + spotAngles.y));

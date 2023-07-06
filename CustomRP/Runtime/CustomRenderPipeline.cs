@@ -4,25 +4,28 @@ using UnityEngine.Rendering;
 public partial class CustomRenderPipeline : RenderPipeline
 {
     bool useDynamicBatching, useGPUInstancing, useLightsPerObject;
-    bool allowHDR;
-    CameraRenderer renderer = new CameraRenderer();
+    CameraBufferSettings cameraBufferSettings;
+    //CameraRenderer renderer = new CameraRenderer();
+    CameraRenderer cameraRenderer;
     ShadowSettings shadowSettings;
     PostFXSetting postFXSetting;
     int colorLUTResolution;
 
     //SRP合并测试
     public CustomRenderPipeline(
-        bool allowHDR,
+        CameraBufferSettings cameraBufferSettings,
         bool useDynamicBatching,
         bool useGPUInstancing,
         bool useSPRBather,
         bool useLightsPerObject,
         ShadowSettings shadowSettings,
         PostFXSetting postFXSetting,
-        int colorLUTResolution
+        int colorLUTResolution,
+        Shader cameraRendererShader
+
     )
     {
-        this.allowHDR = allowHDR;
+        this.cameraBufferSettings = cameraBufferSettings;
         //设置合批启用状态
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
@@ -35,16 +38,17 @@ public partial class CustomRenderPipeline : RenderPipeline
         this.shadowSettings = shadowSettings;
         this.postFXSetting = postFXSetting;
         InitializeForEditor();
+        cameraRenderer = new CameraRenderer(cameraRendererShader);
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         for (int i = 0; i < cameras.Length; ++i)
         {
-            renderer.Render(
+            cameraRenderer.Render(
                 context,
                 cameras[i],
-                allowHDR,
+                cameraBufferSettings,
                 useDynamicBatching,
                 useGPUInstancing,
                 useLightsPerObject,
@@ -53,5 +57,12 @@ public partial class CustomRenderPipeline : RenderPipeline
                 colorLUTResolution
             );
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        DisposeForEditor();
+        cameraRenderer.Dispose();
     }
 }

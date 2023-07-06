@@ -6,6 +6,7 @@ struct Surface
 {
 	float3 position;
 	float3 normal;
+	float3 interpolateNormal;
 	float3 color;
 	float alpha;
 	float metallic;
@@ -16,6 +17,8 @@ struct Surface
     float dither;
     float fresnelStrength;
 	uint renderingLayerMask;
+	//ÕÚµ²Êý¾Ý
+	float occlusion;
 };
 
 #endif

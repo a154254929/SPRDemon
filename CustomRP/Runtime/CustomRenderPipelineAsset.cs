@@ -12,8 +12,14 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
         useSRPBatching = true,
         useLightsPerObject = true;
 
+    //[SerializeField]
+    //bool allowHDR = true;
     [SerializeField]
-    bool allowHDR = true;
+    CameraBufferSettings cameraBuffer = new CameraBufferSettings
+    {
+        allowHDR = true,
+        renderScale = 1.0f
+    };
 
     //“ı”∞…Ë÷√
     [SerializeField]
@@ -34,17 +40,21 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
     [SerializeField]
     ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
 
+    [SerializeField]
+    Shader cameraRendererShader = default;
+
     protected override RenderPipeline CreatePipeline()
     {
         return new CustomRenderPipeline(
-            allowHDR,
+            cameraBuffer,
             useDynamicBatching,
             useGPUInstancing,
             useSRPBatching,
             useLightsPerObject,
             shadowSettings,
             postFxSetting,
-            (int)colorLUTResolution
+            (int)colorLUTResolution,
+            cameraRendererShader
         );
     }
 }
